@@ -641,6 +641,10 @@ class MoveIt2:
 
         # Plan trajectory asynchronously by service call
         if cartesian:
+            self.__move_action_goal.request.start_state.joint_state = (
+                start_joint_state
+            )
+
             future = self._plan_cartesian_path(
                 max_step=max_step,
                 frame_id=(
@@ -2177,12 +2181,12 @@ class MoveIt2:
         move_action_goal = MoveGroup.Goal()
         move_action_goal.request.workspace_parameters.header.frame_id = frame_id
         # move_action_goal.request.workspace_parameters.header.stamp = "Set during request"
-        move_action_goal.request.workspace_parameters.min_corner.x = -1.0
-        move_action_goal.request.workspace_parameters.min_corner.y = -1.0
-        move_action_goal.request.workspace_parameters.min_corner.z = -1.0
-        move_action_goal.request.workspace_parameters.max_corner.x = 1.0
-        move_action_goal.request.workspace_parameters.max_corner.y = 1.0
-        move_action_goal.request.workspace_parameters.max_corner.z = 1.0
+        move_action_goal.request.workspace_parameters.min_corner.x = -10.0
+        move_action_goal.request.workspace_parameters.min_corner.y = -10.0
+        move_action_goal.request.workspace_parameters.min_corner.z = -10.0
+        move_action_goal.request.workspace_parameters.max_corner.x = 10.0
+        move_action_goal.request.workspace_parameters.max_corner.y = 10.0
+        move_action_goal.request.workspace_parameters.max_corner.z = 10.0
         # move_action_goal.request.start_state = "Set during request"
         move_action_goal.request.goal_constraints = [Constraints()]
         move_action_goal.request.path_constraints = Constraints()
