@@ -639,11 +639,11 @@ class MoveIt2:
                 rclpy.spin_once(self._node, timeout_sec=1.0)
         self._node._logger.info(message="Joint states are available now")
 
+        self.__move_action_goal.request.start_state.joint_state = (
+            start_joint_state
+        )
         # Plan trajectory asynchronously by service call
         if cartesian:
-            self.__move_action_goal.request.start_state.joint_state = (
-                start_joint_state
-            )
 
             future = self._plan_cartesian_path(
                 max_step=max_step,
