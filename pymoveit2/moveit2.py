@@ -2371,6 +2371,17 @@ class MoveIt2:
     def planner_id(self, value: str):
         self.__move_action_goal.request.planner_id = value
 
+    def wait_new_joint_state(self):
+        rclpy.spin_once(self._node, timeout_sec=0.5)
+        timeout = 2.0
+        time_now = self._node.get_clock().now()
+        while (self.__joint_state is None) and (time_now.seconds_nanoseconds()[0] < timeout):
+            if self.__joint_state is not None:
+                break
+            else:
+                rclpy.spin_once(self._node, timeout_sec=0.5)
+        return
+
 
 def init_joint_state(
     joint_names: List[str],
@@ -2423,3 +2434,4 @@ def init_dummy_joint_trajectory_from_state(
     joint_trajectory.points.append(point)
 
     return joint_trajectory
+
