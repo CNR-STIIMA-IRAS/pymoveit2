@@ -1848,9 +1848,14 @@ class MoveIt2:
                 f"Service '{self._get_planning_scene_service.srv_name}' is not yet available. Better luck next time!"
             )
             return False
-        self.__planning_scene = self._get_planning_scene_service.call(
+        planning_scene_future = self._get_planning_scene_service.call_async(
             GetPlanningScene.Request()
-        ).scene
+        )
+
+        while not planning_scene_future.done():
+            rclpy.spin_once(self._node, timeout_sec=1.0)
+
+        self.__planning_scene = planning_scene_future.result().scene
         return True
 
     def allow_collisions(self, id: str, allow: bool) -> Optional[Future]:
@@ -2433,6 +2438,16 @@ class MoveIt2:
             if frame_id is not None:
                 kinematic_ws.header.frame_id = frame_id
 
+    def wait_new_joint_state(self):
+        rclpy.spin_once(self._node, timeout_sec=0.5)
+        timeout = 2.0
+        time_now = self._node.get_clock().now()
+        while (self.__joint_state is None) and (time_now.seconds_nanoseconds()[0] < timeout):
+            if self.__joint_state is not None:
+                break
+            else:
+                rclpy.spin_once(self._node, timeout_sec=0.5)
+        return
 
 def init_joint_state(
     joint_names: List[str],
