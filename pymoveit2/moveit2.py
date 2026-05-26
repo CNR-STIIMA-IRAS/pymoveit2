@@ -2454,6 +2454,39 @@ class MoveIt2:
             if frame_id is not None:
                 kinematic_ws.header.frame_id = frame_id
 
+    def wait_new_joint_state(self, timeout_sec: float = 1.0) -> bool:
+        """
+        Wait until a new JointState message is received.
+
+        Returns True if a new JointState was received before the timeout,
+        False otherwise.
+        """
+        timeout = rclpy.duration.Duration(seconds=timeout_sec)
+        deadline = self._node.get_clock().now() + timeout
+
+        self.__joint_state_mutex.acquire()
+        self.__new_joint_state_available = False
+        self.__joint_state_mutex.release()
+
+        while rclpy.ok():
+            self.__joint_state_mutex.acquire()
+            new_joint_state_available = self.__new_joint_state_available
+            if new_joint_state_available:
+                self.__new_joint_state_available = False
+                self.__joint_state_mutex.release()
+                return True
+            self.__joint_state_mutex.release()
+
+            if self._node.get_clock().now() >= deadline:
+                return False
+
+            try:
+                rclpy.spin_once(self._node, timeout_sec=0.01)
+            except ExternalShutdownException:
+                return False
+
+        return False
+
 
 def init_joint_state(
     joint_names: List[str],
